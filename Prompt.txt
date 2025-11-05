@@ -1,1 +1,8 @@
 Tạo Prompt kiểm tra TL76.html kiểm tra chỉnh sửa Chấm công. Chọn tháng MM/YYYY=>Chi Nhánh=> Xuất mẫu Excel Chấm_Công_:là danh sách tất cả Nhân viên CN đã chon csdddddúc Columm như hình. Nhập lại Mẫu Excel Chấm_Công_ vào công thức tính công, Chọn MM/YYYY=> Chi Nhánh=> xuất File mẫu Excel Cham_Cong_ CN chọn.Mẫu excel là ds nhân viên trong chi nhánh ví dụ CN VP Form như hình
+
+
+tạo prompt cho cursor codex sửa phần mêm TL76.html thêm như yêu cầu: - Danh mục trong form Tải mẫu NV Excel các Hạng mục như hình. Trống thì bỏ qua. - Mã nhân viên phần mềm tự cấp tùy vào Column Chi Nhánh - không trùng - Phần mềm hiển thị phải thêm đầy đủ hạng mục như file mẫu excel nhập: Ngày Vào Làm Chi Nhánh Mã Nhân Viên Tên Nhân Viên TNCN (%) Bảo Hiểm (%) Lương CB/26 ngày Lương Nhiệm Vụ/26 ngày Phụ cấp Nhiệm Vụ STK Ngân Hàng
+
+
+
+tạo prompt cho cursor codex sửa phần mêm TL76.html thêm như yêu cầu: - Danh mục trong form Tải mẫu NV Excel các Hạng mục như hình. Trống thì bỏ qua. - Mã nhân viên phần mềm tự cấp tùy vào Column Chi Nhánh - không trùng - Phần mềm hiển thị phải thêm đầy đủ hạng mục như file mẫu excel nhập: Ngày Vào Làm Chi Nhánh Mã Nhân Viên Tên Nhân Viên TNCN (%) Bảo Hiểm (%) Lương CB/26 ngày Lương Nhiệm Vụ/26 ngày Phụ cấp Nhiệm Vụ STK Ngân Hàng. - File mẫu NV excel như hình\
