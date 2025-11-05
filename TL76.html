@@ -1,0 +1,2474 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Tính Lương Nhân Viên - Hoạt Động Hoàn Hảo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .salary-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .overtime-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .branch-card {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        .version-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification.success { background-color: #10b981; }
+        .notification.error { background-color: #ef4444; }
+        .notification.warning { background-color: #f59e0b; }
+        .notification.info { background-color: #3b82f6; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-full">
+    <div class="min-h-full">
+        <!-- Header -->
+        <header class="bg-white shadow-lg border-b-4 border-indigo-500">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-indigo-600 p-3 rounded-xl">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold gradient-text">Hệ Thống Tính Lương</h1>
+                            <p class="text-gray-600">Quản lý lương và chấm công - <span class="font-semibold text-green-600">Hoạt Động Hoàn Hảo</span></p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">Tháng hiện tại</p>
+                        <p class="text-xl font-semibold text-indigo-600" id="currentMonth"></p>
+                        <div class="flex items-center justify-end mt-1">
+                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                            <p class="text-xs text-green-600">Hoạt động bình thường</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- System Status -->
+            <div class="mb-6 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-4">
+                <div class="flex items-center">
+                    <div class="bg-green-100 p-2 rounded-full mr-3">
+                        <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-green-900 font-semibold">🚀 Phần Mềm Hoạt Động Hoàn Hảo</h3>
+                        <p class="text-green-700 text-sm mt-1">
+                            ✨ Tất cả chức năng hoạt động bình thường. Dữ liệu được lưu tự động trong trình duyệt.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="mb-8">
+                <nav class="flex space-x-1 bg-gray-100 p-1 rounded-xl">
+                    <button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-active flex-1 py-3 px-4 text-sm font-medium rounded-lg transition-all duration-200">
+                        📊 Tổng Quan
+                    </button>
+                    <button onclick="showTab('employees')" id="tab-employees" class="flex-1 py-3 px-4 text-sm font-medium rounded-lg transition-all duration-200 hover:bg-white">
+                        👥 Nhân Viên
+                    </button>
+                    <button onclick="showTab('attendance')" id="tab-attendance" class="flex-1 py-3 px-4 text-sm font-medium rounded-lg transition-all duration-200 hover:bg-white">
+                        ⏰ Chấm Công
+                    </button>
+                    <button onclick="showTab('salary')" id="tab-salary" class="flex-1 py-3 px-4 text-sm font-medium rounded-lg transition-all duration-200 hover:bg-white">
+                        💰 Tính Lương
+                    </button>
+                    <button onclick="showTab('reports')" id="tab-reports" class="flex-1 py-3 px-4 text-sm font-medium rounded-lg transition-all duration-200 hover:bg-white">
+                        📋 Báo Cáo
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard-content" class="tab-content fade-in">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="salary-card text-white p-6 rounded-xl shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm">Tổng Lương Tháng</p>
+                                <p class="text-2xl font-bold" id="totalSalary">0 VNĐ</p>
+                            </div>
+                            <div class="bg-white/20 p-3 rounded-lg">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path>
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overtime-card text-white p-6 rounded-xl shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm">Tổng Nhân Viên</p>
+                                <p class="text-2xl font-bold" id="totalEmployees">0</p>
+                            </div>
+                            <div class="bg-white/20 p-3 rounded-lg">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="branch-card text-white p-6 rounded-xl shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm">Tổng Giờ Tăng Ca</p>
+                                <p class="text-2xl font-bold" id="totalOvertime">0 giờ</p>
+                            </div>
+                            <div class="bg-white/20 p-3 rounded-lg">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="version-card text-white p-6 rounded-xl shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm">Số Chi Nhánh</p>
+                                <p class="text-2xl font-bold">4</p>
+                            </div>
+                            <div class="bg-white/20 p-3 rounded-lg">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a2 2 0 114 0 2 2 0 01-4 0zm8 0a2 2 0 114 0 2 2 0 01-4 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Công thức tính lương chi tiết -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">📋 Công Thức Tính Lương Chi Tiết</h3>
+                    
+                    <!-- Ví dụ tính lương cụ thể -->
+                    <div class="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <h4 class="font-semibold text-yellow-900 mb-3">🧮 Ví Dụ Tính Lương Cụ Thể</h4>
+                        <div class="bg-white p-4 rounded-lg">
+                            <p class="font-medium text-gray-800 mb-2">Nhân viên: Nguyễn Văn A - Lương CB: 8,000,000 VNĐ</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div class="space-y-2">
+                                    <p><strong>Dữ liệu chấm công:</strong></p>
+                                    <p>• Số ngày làm: 26 ngày</p>
+                                    <p>• Tăng ca 1.5x: 10 giờ</p>
+                                    <p>• Tăng ca 2x: 5 giờ</p>
+                                    <p>• Tăng ca 3x: 2 giờ</p>
+                                    <p>• Năng suất: 300,000 VNĐ</p>
+                                    <p>• Chợ: 200,000 VNĐ</p>
+                                    <p>• Ứng lương: 1,000,000 VNĐ</p>
+                                    <p>• TNCN: 10%</p>
+                                    <p>• Bảo hiểm: 10.5%</p>
+                                </div>
+                                <div class="space-y-2">
+                                    <p><strong>Tính toán chi tiết:</strong></p>
+                                    <p class="text-green-600">• Lương ngày = 8,000,000 ÷ 26 = 307,692 VNĐ/ngày</p>
+                                    <p class="text-green-600">• Lương giờ = 307,692 ÷ 8 = 38,462 VNĐ/giờ</p>
+                                    <p class="text-blue-600">• Lương CB = 307,692 × 26 = 8,000,000 VNĐ</p>
+                                    <p class="text-orange-600">• TC 1.5x = 38,462 × 1.5 × 10 = 576,923 VNĐ</p>
+                                    <p class="text-orange-600">• TC 2x = 38,462 × 2 × 5 = 384,615 VNĐ</p>
+                                    <p class="text-orange-600">• TC 3x = 38,462 × 3 × 2 = 230,769 VNĐ</p>
+                                    <p class="text-purple-600">• Tổng TC = 1,192,307 VNĐ</p>
+                                    <p class="text-red-600">• TNCN = (8,000,000 + 1,192,307) × 10% = 919,231 VNĐ</p>
+                                    <p class="text-red-600">• Bảo hiểm = 8,000,000 × 10.5% = 840,000 VNĐ</p>
+                                    <p class="text-indigo-600 font-bold">• Thực lĩnh = 8,000,000 + 1,192,307 + 500,000 - 1,000,000 - 919,231 - 840,000 = 6,933,076 VNĐ</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-blue-900 mb-3">🔢 Thông Số Chuẩn</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-700">Số ngày chuẩn/tháng:</span>
+                                    <span class="font-medium">26 ngày</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-700">Số giờ chuẩn/ngày:</span>
+                                    <span class="font-medium">8 giờ</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-700">Hệ số tăng ca 1.5x:</span>
+                                    <span class="font-medium text-orange-600">Ngày thường</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-700">Hệ số tăng ca 2x:</span>
+                                    <span class="font-medium text-orange-600">Cuối tuần</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-700">Hệ số tăng ca 3x:</span>
+                                    <span class="font-medium text-orange-600">Ngày lễ</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-green-900 mb-3">💰 Công Thức Tính</h4>
+                            <div class="space-y-3 text-sm">
+                                <div class="bg-white p-3 rounded border-l-4 border-green-500">
+                                    <p class="font-medium text-gray-800">1. Lương ngày:</p>
+                                    <p class="text-gray-600">= Lương CB ÷ 26 ngày</p>
+                                </div>
+                                
+                                <div class="bg-white p-3 rounded border-l-4 border-blue-500">
+                                    <p class="font-medium text-gray-800">2. Lương giờ:</p>
+                                    <p class="text-gray-600">= Lương ngày ÷ 8 giờ</p>
+                                </div>
+                                
+                                <div class="bg-white p-3 rounded border-l-4 border-orange-500">
+                                    <p class="font-medium text-gray-800">3. Lương tăng ca:</p>
+                                    <p class="text-gray-600">= Lương giờ × Hệ số × Số giờ TC</p>
+                                </div>
+                                
+                                <div class="bg-white p-3 rounded border-l-4 border-purple-500">
+                                    <p class="font-medium text-gray-800">4. Lương thô:</p>
+                                    <p class="text-gray-600">= (Lương ngày × Ngày làm) + Tổng TC</p>
+                                </div>
+                                
+                                <div class="bg-white p-3 rounded border-l-4 border-red-500">
+                                    <p class="font-medium text-gray-800">5. Khấu trừ:</p>
+                                    <p class="text-gray-600">= Lương thô × (TNCN% + BH%)</p>
+                                </div>
+                                
+                                <div class="bg-white p-3 rounded border-l-4 border-indigo-500">
+                                    <p class="font-medium text-gray-800">6. Thực lĩnh:</p>
+                                    <p class="text-indigo-600 font-bold">= Lương CB + Thưởng NV + TM Năng Suất + Tiền Chợ + Tăng Ca - Nghỉ - Bảo Hiểm - TNCN</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lưu ý quan trọng -->
+                    <div class="mt-6 p-4 bg-red-50 rounded-lg border border-red-200">
+                        <h4 class="font-semibold text-red-900 mb-2">⚠️ Lưu Ý Quan Trọng</h4>
+                        <ul class="text-sm text-red-700 space-y-1">
+                            <li>• <strong>Lương cơ bản:</strong> Được chia đều cho 26 ngày làm việc chuẩn</li>
+                            <li>• <strong>Tăng ca 1.5x:</strong> Áp dụng cho giờ làm thêm trong ngày thường</li>
+                            <li>• <strong>Tăng ca 2x:</strong> Áp dụng cho làm việc cuối tuần (thứ 7, chủ nhật)</li>
+                            <li>• <strong>Tăng ca 3x:</strong> Áp dụng cho làm việc ngày lễ, tết</li>
+                            <li>• <strong>TNCN:</strong> Tính trên (Lương CB + Thưởng NV + Tăng Ca). Nếu = 0 thì miễn thuế</li>
+                            <li>• <strong>Bảo hiểm:</strong> Tính trên Lương CB × hệ số%. Nếu = 0 thì miễn bảo hiểm</li>
+                            <li>• <strong>TM Năng suất & Tiền Chợ:</strong> Là tiền thưởng cộng thêm, không bị khấu trừ thuế</li>
+                            <li>• <strong>Ứng lương:</strong> Trừ trực tiếp vào tổng lương thực lĩnh</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employees Tab -->
+            <div id="employees-content" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Add Employee Form -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-6">Thêm Nhân Viên Mới</h3>
+                            
+                            <form id="employeeForm" class="space-y-4">
+                                <div>
+                                    <label for="empBranch" class="block text-sm font-medium text-gray-700 mb-2">Chi Nhánh</label>
+                                    <select id="empBranch" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="vpsg">Văn Phòng SG</option>
+                                        <option value="xuonganha">Xưởng An Hạ</option>
+                                        <option value="xuonglongxuyen">Xưởng Long Xuyên</option>
+                                        <option value="hanoi">Hà Nội</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="empCode" class="block text-sm font-medium text-gray-700 mb-2">Mã Nhân Viên</label>
+                                    <input type="text" id="empCode" class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                                </div>
+
+                                <div>
+                                    <label for="empName" class="block text-sm font-medium text-gray-700 mb-2">Tên Nhân Viên</label>
+                                    <input type="text" id="empName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Nhập tên nhân viên" required>
+                                </div>
+
+                                <div>
+                                    <label for="empJoinDate" class="block text-sm font-medium text-gray-700 mb-2">Ngày Vào Làm</label>
+                                    <input type="text" id="empJoinDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="20122020 hoặc 20/12/2020" required>
+                                    <p class="text-xs text-gray-500 mt-1">Nhập DDMMYYYY (20122020) hoặc DD/MM/YYYY (20/12/2020)</p>
+                                </div>
+
+                                <div>
+                                    <label for="empBaseSalary26" class="block text-sm font-medium text-gray-700 mb-2">Lương CB/26 ngày (VNĐ)</label>
+                                    <input type="number" id="empBaseSalary26" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="5000000" min="0" step="1000" required>
+                                    <div class="form-text text-xs text-gray-500 mt-1" id="bhAmountHint">BH (10.5% × Lương CB) = 0 đ</div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="empTNCN" class="block text-sm font-medium text-gray-700 mb-2">TNCN (%)</label>
+                                        <input type="number" id="empTNCN" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0" min="0" max="100" step="0.1">
+                                    </div>
+                                    <div>
+                                        <label for="empInsurance" class="block text-sm font-medium text-gray-700 mb-2">Bảo Hiểm (%)</label>
+                                        <input type="number" id="empInsurance" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="10.5" min="0" max="100" step="0.1">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="empTaskSalary26" class="block text-sm font-medium text-gray-700 mb-2">Lương Nhiệm Vụ/26 ngày (VNĐ)</label>
+                                        <input type="number" id="empTaskSalary26" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0" min="0" step="1000">
+                                    </div>
+                                    <div>
+                                        <label for="empAllowance" class="block text-sm font-medium text-gray-700 mb-2">Phụ cấp (VNĐ)</label>
+                                        <input type="number" id="empAllowance" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0" min="0" step="1000">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="empTask" class="block text-sm font-medium text-gray-700 mb-2">Nhiệm Vụ</label>
+                                    <input type="text" id="empTask" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ví dụ: Công nhân, Kinh doanh">
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="empAccountNumber" class="block text-sm font-medium text-gray-700 mb-2">STK</label>
+                                        <input type="text" id="empAccountNumber" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Số tài khoản ngân hàng">
+                                    </div>
+                                    <div>
+                                        <label for="empBankName" class="block text-sm font-medium text-gray-700 mb-2">Ngân Hàng</label>
+                                        <input type="text" id="empBankName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="ACB, Vietcombank...">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-medium">
+                                    ➕ Thêm Nhân Viên
+                                </button>
+                            </form>
+
+                            <!-- Import/Export Buttons -->
+                            <div class="mt-6 space-y-3">
+                                <button onclick="downloadEmployeeTemplate()" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium text-sm">
+                                    📄 Tải Mẫu NV Excel
+                                </button>
+                                <div class="relative">
+                                    <input type="file" id="employeeFileInput" accept=".xlsx,.xls" class="hidden" onchange="importEmployeeExcel(event)">
+                                    <button onclick="document.getElementById('employeeFileInput').click()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium text-sm">
+                                        📊 Nhập Excel NV
+                                    </button>
+                                </div>
+
+                                <div id="import-warnings" class="text-xs text-red-600 space-y-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employee List -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-6">Danh Sách Nhân Viên</h3>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">STT</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Chi Nhánh</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã NV</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tên NV</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày Vào Làm</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">TNCN (%)</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bảo Hiểm (%)</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">BH (đ)</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lương CB/26</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lương NV/26</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phụ cấp</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nhiệm Vụ</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">STK</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngân Hàng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="employeeTableBody" class="bg-white divide-y divide-gray-200">
+                                        <!-- Employee records will be added here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Tab -->
+            <div id="attendance-content" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Add Attendance Form -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">Nhập Chấm Công</h3>
+                        
+                        <form id="attendanceForm" class="space-y-4">
+                            <div>
+                                <label for="attEmployeeSelect" class="block text-sm font-medium text-gray-700 mb-2">Chọn Nhân Viên</label>
+                                <select id="attEmployeeSelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                                    <option value="">-- Chọn nhân viên --</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="workDays" class="block text-sm font-medium text-gray-700 mb-2">Số Ngày Làm</label>
+                                <input type="number" id="workDays" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="26" min="0" max="31" required>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label for="overtime15" class="block text-sm font-medium text-gray-700 mb-2">TC 1.5x (giờ)</label>
+                                    <input type="number" id="overtime15" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0" min="0" step="0.5">
+                                </div>
+                                <div>
+                                    <label for="overtime2" class="block text-sm font-medium text-gray-700 mb-2">TC 2x (giờ)</label>
+                                    <input type="number" id="overtime2" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0" min="0" step="0.5">
+                                </div>
+                                <div>
+                                    <label for="overtime3" class="block text-sm font-medium text-gray-700 mb-2">TC 3x (giờ)</label>
+                                    <input type="number" id="overtime3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0" min="0" step="0.5">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="productivityBonus" class="block text-sm font-medium text-gray-700 mb-2">TM Năng Suất (VNĐ)</label>
+                                    <input type="number" id="productivityBonus" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0" min="0">
+                                    <p class="text-xs text-gray-500 mt-1">Thưởng tiền mặt năng suất</p>
+                                </div>
+                                <div>
+                                    <label for="marketBonus" class="block text-sm font-medium text-gray-700 mb-2">Tiền Chợ (VNĐ)</label>
+                                    <input type="number" id="marketBonus" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0" min="0">
+                                    <p class="text-xs text-gray-500 mt-1">Tiền chợ phụ cấp</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="advance" class="block text-sm font-medium text-gray-700 mb-2">Ứng Lương (VNĐ)</label>
+                                <input type="number" id="advance" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="0" min="0">
+                            </div>
+
+                            <div>
+                                <label for="attendanceNote" class="block text-sm font-medium text-gray-700 mb-2">Ghi Chú</label>
+                                <textarea id="attendanceNote" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" rows="2" placeholder="Ghi chú thêm (tùy chọn)..."></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200 font-medium">
+                                💾 Lưu Chấm Công
+                            </button>
+                        </form>
+
+                        <!-- Import/Export Buttons -->
+                        <div class="mt-6 space-y-3">
+                            <button onclick="showAttendanceTemplateModal()" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium text-sm">
+                                📥 Mẫu CC
+                            </button>
+                            <div class="relative">
+                                <input type="file" id="attendanceFileInput" accept=".xlsx,.xls" class="hidden" onchange="importAttendanceExcel(event)">
+                                <button onclick="document.getElementById('attendanceFileInput').click()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium text-sm">
+                                    📊 Nhập Excel CC
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attendance List -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">Danh Sách Chấm Công</h3>
+                        <div class="space-y-4 max-h-96 overflow-y-auto" id="attendanceList">
+                            <!-- Attendance records will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salary Tab -->
+            <div id="salary-content" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900">Bảng Lương Chi Tiết</h3>
+                        <div class="flex space-x-3">
+                            <button onclick="calculateAllSalaries()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium">
+                                🧮 Tính Lương Tất Cả
+                            </button>
+                            <button onclick="exportSalaryReport()" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium">
+                                📊 Xuất Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nhân Viên</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Chi Nhánh</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày Làm</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Giờ TC</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lương CB</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lương TC</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thưởng</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tổng Lương</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salaryTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Salary records will be added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reports-content" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Branch Summary -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">Tổng Hợp Theo Chi Nhánh</h3>
+                        <div class="space-y-4" id="branchSummary">
+                            <!-- Branch summaries will be added here -->
+                        </div>
+                    </div>
+
+                    <!-- Export Options -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">Xuất Báo Cáo</h3>
+                        
+                        <!-- Export All -->
+                        <div class="mb-6">
+                            <h4 class="font-medium text-gray-700 mb-3">📊 Xuất Tất Cả</h4>
+                            <div class="space-y-2">
+                                <button onclick="exportSalaryReport()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm">
+                                    💰 Bảng Lương Tất Cả
+                                </button>
+                                <button onclick="exportEmployeeList()" class="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors font-medium text-sm">
+                                    👥 Danh Sách NV Tất Cả
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Export by Branch -->
+                        <div class="mb-6">
+                            <h4 class="font-medium text-gray-700 mb-3">🏢 Xuất Theo Chi Nhánh</h4>
+                            <div class="space-y-2">
+                                <button onclick="exportSalaryByBranch('vpsg')" class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm">
+                                    💰 Lương Văn Phòng SG
+                                </button>
+                                <button onclick="exportSalaryByBranch('xuonganha')" class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm">
+                                    💰 Lương Xưởng An Hạ
+                                </button>
+                                <button onclick="exportSalaryByBranch('xuonglongxuyen')" class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm">
+                                    💰 Lương Xưởng Long Xuyên
+                                </button>
+                                <button onclick="exportSalaryByBranch('hanoi')" class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm">
+                                    💰 Lương Hà Nội
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Bank Statement -->
+                        <div class="mb-6">
+                            <h4 class="font-medium text-gray-700 mb-3">🏦 Bảng Kê Ngân Hàng</h4>
+                            <div class="space-y-2">
+                                <button onclick="exportBankStatement()" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm">
+                                    🏦 Bảng Kê Chuyển Khoản
+                                </button>
+                                <button onclick="exportBankStatementByBranch('vpsg')" class="w-full bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 transition-colors font-medium text-sm">
+                                    🏦 BK Văn Phòng SG
+                                </button>
+                                <button onclick="exportBankStatementByBranch('xuonganha')" class="w-full bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 transition-colors font-medium text-sm">
+                                    🏦 BK Xưởng An Hạ
+                                </button>
+                                <button onclick="exportBankStatementByBranch('xuonglongxuyen')" class="w-full bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 transition-colors font-medium text-sm">
+                                    🏦 BK Xưởng Long Xuyên
+                                </button>
+                                <button onclick="exportBankStatementByBranch('hanoi')" class="w-full bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 transition-colors font-medium text-sm">
+                                    🏦 BK Hà Nội
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Other Options -->
+                        <div class="space-y-2">
+                            <button onclick="backupData()" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium text-sm">
+                                💾 Sao Lưu Dữ Liệu
+                            </button>
+                        </div>
+
+                        <!-- Clear Data -->
+                        <div class="mt-6 p-4 bg-red-50 rounded-lg border border-red-200">
+                            <h4 class="font-semibold text-red-900 mb-2">⚠️ Xóa Dữ Liệu</h4>
+                            <button onclick="confirmClearData()" class="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors font-medium">
+                                🗑️ Xóa Tất Cả Dữ Liệu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Branch Selection Modal -->
+    <div id="branchModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-gray-900">📋 Chọn Chi Nhánh</h3>
+                <button onclick="hideBranchModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="space-y-3" id="branchOptions">
+                <!-- Branch options will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let employees = [];
+        let attendanceRecords = [];
+        let currentTab = 'dashboard';
+
+        const STORAGE_KEY = 'salarySystemSimple';
+        const DEFAULT_INSURANCE_RATE = 10.5;
+
+        const branchNames = {
+            vpsg: 'Văn Phòng SG',
+            xuonganha: 'Xưởng An Hạ',
+            xuonglongxuyen: 'Xưởng Long Xuyên',
+            hanoi: 'Hà Nội'
+        };
+
+        const branchPrefixes = {
+            vpsg: 'VP',
+            xuonganha: 'AH',
+            xuonglongxuyen: 'LX',
+            hanoi: 'HN'
+        };
+
+        const vnCollator = new Intl.Collator('vi', { sensitivity: 'base', numeric: true });
+
+        function normalizeVN(value) {
+            return (value || '')
+                .toString()
+                .normalize('NFD')
+                .replace(/\p{Diacritic}/gu, '')
+                .toLowerCase()
+                .trim();
+        }
+
+        function parseNumber(value) {
+            if (value === undefined || value === null || value === '') return 0;
+            if (typeof value === 'number' && Number.isFinite(value)) return value;
+            const cleaned = value
+                .toString()
+                .replace(/\./g, '')
+                .replace(/,/g, '.')
+                .trim();
+            const parsed = Number(cleaned);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+
+        function mapBranch(name) {
+            const s = normalizeVN(name);
+            if (/^(van ?phong ?sg|vpsg|vp ?sg)$/.test(s)) return 'vpsg';
+            if (/^(xuong ?an ?ha|an ha|ah)$/.test(s)) return 'xuonganha';
+            if (/^(xuong ?long ?xuyen|long xuyen|lx)$/.test(s)) return 'xuonglongxuyen';
+            if (/^(ha noi|hn)$/.test(s)) return 'hanoi';
+            return null;
+        }
+
+        function computeInsuranceAmount(baseSalary, ratePct) {
+            const base = parseNumber(baseSalary);
+            const rate = Number.isFinite(ratePct) ? Number(ratePct) : DEFAULT_INSURANCE_RATE;
+            return Math.round(base * rate / 100);
+        }
+
+        function convertDateFormat(value) {
+            if (value === null || value === undefined || value === '') return '';
+
+            if (typeof value === 'number' && Number.isFinite(value)) {
+                const excelEpoch = Date.UTC(1899, 11, 30);
+                const millis = (value >= 60 ? value - 1 : value) * 86400000; // Excel leap year bug
+                const date = new Date(excelEpoch + millis);
+                if (Number.isNaN(date.getTime())) return '';
+                const y = date.getUTCFullYear();
+                const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+                const d = String(date.getUTCDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+
+            const str = value.toString().trim();
+            if (!str) return '';
+
+            if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+                return str;
+            }
+
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+                const [day, month, year] = str.split('/');
+                return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            }
+
+            if (/^\d{8}$/.test(str)) {
+                const day = str.slice(0, 2);
+                const month = str.slice(2, 4);
+                const year = str.slice(4, 8);
+                return `${year}-${month}-${day}`;
+            }
+
+            return '';
+        }
+
+        function formatDateForDisplay(value) {
+            const iso = convertDateFormat(value);
+            if (!iso) return '';
+            const [year, month, day] = iso.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
+        function normalizeEmployee(raw) {
+            if (!raw) return null;
+
+            const branchRaw = raw.branch ?? raw.chi_nhanh ?? raw['Chi Nhánh'];
+            const branch = branchRaw ? (branchNames[branchRaw] ? branchRaw : mapBranch(branchRaw)) : null;
+            const name = (raw.name ?? raw.ten_nv ?? raw['Tên Nhân Viên'] ?? '').toString().trim();
+            const joinDate = convertDateFormat(raw.joinDate ?? raw.ngay_vao_lam ?? raw['Ngày Vào Làm'] ?? '');
+            const baseSalary = parseNumber(raw.baseSalary26 ?? raw.baseSalary ?? raw['Lương CB/26 ngày']);
+            if (!branch || !name || baseSalary <= 0) {
+                return null;
+            }
+
+            const taskSalary = parseNumber(raw.taskSalary26 ?? raw.taskSalary ?? raw['Lương Nhiệm Vụ/26 ngày']);
+            const allowance = parseNumber(raw.allowance ?? raw['Phụ cấp']);
+
+            const tncnInput = raw.tncn ?? raw['TNCN (%)'];
+            const tncn = tncnInput === undefined || tncnInput === null || tncnInput === ''
+                ? 0
+                : parseNumber(tncnInput);
+
+            const insuranceInput = raw.insurance ?? raw['Bảo Hiểm (%)'];
+            const insurance = insuranceInput === undefined || insuranceInput === null || insuranceInput === ''
+                ? DEFAULT_INSURANCE_RATE
+                : parseNumber(insuranceInput);
+
+            const accountNumber = (raw.accountNumber ?? raw.stk ?? raw['STK'] ?? '').toString().trim();
+            const bankName = (raw.bankName ?? raw['Ngân Hàng'] ?? '').toString().trim();
+            const task = (raw.task ?? raw['Nhiệm Vụ'] ?? '').toString().trim();
+            const code = (raw.code ?? raw.ma_nv ?? raw['Mã Nhân Viên'] ?? '').toString().trim();
+
+            return {
+                code,
+                name,
+                branch,
+                joinDate,
+                tncn,
+                insurance,
+                baseSalary26: baseSalary,
+                taskSalary26: taskSalary,
+                allowance,
+                task,
+                accountNumber,
+                bankName,
+                baseSalary,
+                taskSalary
+            };
+        }
+
+        function normalizeEmployees(list) {
+            if (!Array.isArray(list)) return [];
+            const normalized = list
+                .map(normalizeEmployee)
+                .filter(Boolean);
+
+            const taken = new Set();
+            normalized.forEach(emp => {
+                if (emp.code) {
+                    if (taken.has(emp.code)) {
+                        emp.code = '';
+                    } else {
+                        taken.add(emp.code);
+                    }
+                }
+            });
+            normalized.forEach(emp => {
+                if (!emp.code) {
+                    const nextCode = generateEmployeeCode(emp.branch, taken);
+                    emp.code = nextCode;
+                    taken.add(nextCode);
+                }
+            });
+            return normalized;
+        }
+
+        function normalizeAttendance(raw) {
+            if (!raw || !raw.employeeCode) return null;
+            const code = raw.employeeCode.toString().trim();
+            if (!code) return null;
+            return {
+                employeeCode: code,
+                workDays: parseNumber(raw.workDays),
+                overtime15: parseNumber(raw.overtime15),
+                overtime2: parseNumber(raw.overtime2),
+                overtime3: parseNumber(raw.overtime3),
+                bonus: parseNumber(raw.bonus),
+                advance: parseNumber(raw.advance),
+                note: (raw.note || '').toString().trim(),
+                timestamp: raw.timestamp || new Date().toISOString()
+            };
+        }
+
+        function normalizeAttendanceList(list) {
+            if (!Array.isArray(list)) return [];
+            return list
+                .map(normalizeAttendance)
+                .filter(Boolean);
+        }
+
+        function setEmployees(list) {
+            employees = normalizeEmployees(list);
+            return employees;
+        }
+
+        function setAttendance(list) {
+            attendanceRecords = normalizeAttendanceList(list);
+            return attendanceRecords;
+        }
+
+        function getEmployees() {
+            return setEmployees(employees || []);
+        }
+
+        function getAttendance() {
+            return setAttendance(attendanceRecords || []);
+        }
+
+        function refreshEmployeeCodePreview() {
+            const branchSelect = document.getElementById('empBranch');
+            const codeInput = document.getElementById('empCode');
+            if (!branchSelect || !codeInput) return;
+            const branch = branchSelect.value;
+            codeInput.value = branch ? generateEmployeeCode(branch) : '';
+        }
+
+        function bindInsurancePreview() {
+            const baseInput = document.getElementById('empBaseSalary26');
+            const insuranceInput = document.getElementById('empInsurance');
+            const hint = document.getElementById('bhAmountHint');
+            if (!hint) return;
+
+            const render = () => {
+                const baseVal = parseNumber(baseInput?.value);
+                const insuranceVal = parseNumber(insuranceInput?.value) || DEFAULT_INSURANCE_RATE;
+                const insuranceText = Number.isFinite(insuranceVal)
+                    ? Number(insuranceVal).toLocaleString('vi-VN', { maximumFractionDigits: 1 })
+                    : DEFAULT_INSURANCE_RATE.toString();
+                const amount = computeInsuranceAmount(baseVal, insuranceVal);
+                hint.textContent = `BH (${insuranceText}% × Lương CB) = ${amount.toLocaleString('vi-VN')} đ`;
+            };
+
+            if (baseInput) ['input', 'change'].forEach(evt => baseInput.addEventListener(evt, render));
+            if (insuranceInput) ['input', 'change'].forEach(evt => insuranceInput.addEventListener(evt, render));
+            render();
+        }
+
+        // Initialize the application
+        function init() {
+            updateCurrentMonth();
+            loadData();
+            updateDashboard();
+            updateEmployeeTable();
+            updateSalaryTable();
+            updateBranchSummary();
+            updateEmployeeSelects();
+            setupEventListeners();
+            
+            showNotification('🚀 Hệ thống đã sẵn sàng hoạt động!', 'success');
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            const employeeForm = document.getElementById('employeeForm');
+            if (employeeForm) {
+                employeeForm.addEventListener('submit', handleEmployeeSubmit);
+            }
+
+            const attendanceForm = document.getElementById('attendanceForm');
+            if (attendanceForm) {
+                attendanceForm.addEventListener('submit', handleAttendanceSubmit);
+            }
+
+            const branchSelect = document.getElementById('empBranch');
+            if (branchSelect) {
+                branchSelect.addEventListener('change', () => {
+                    refreshEmployeeCodePreview();
+                });
+            }
+
+            refreshEmployeeCodePreview();
+            bindInsurancePreview();
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Data persistence
+        function saveData() {
+            const data = {
+                employees: getEmployees(),
+                attendanceRecords: getAttendance(),
+                timestamp: new Date().toISOString()
+            };
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                setEmployees(data.employees || []);
+                setAttendance(data.attendanceRecords || []);
+            }
+        }
+
+        // Update current month display
+        function updateCurrentMonth() {
+            const now = new Date();
+            const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                              'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+            document.getElementById('currentMonth').textContent = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+        }
+
+        // Generate employee code
+        function generateEmployeeCode(branchCode, reservedCodes = new Set()) {
+            const prefix = branchPrefixes[branchCode] || 'NV';
+            const taken = new Set(reservedCodes);
+            (employees || []).forEach(emp => {
+                if (emp && emp.code) taken.add(emp.code);
+            });
+
+            let i = 1;
+            while (true) {
+                const code = `${prefix}${String(i).padStart(3, '0')}`;
+                if (!taken.has(code)) {
+                    return code;
+                }
+                i += 1;
+            }
+        }
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('nav button').forEach(tab => {
+                tab.classList.remove('tab-active');
+                tab.classList.add('hover:bg-white');
+            });
+
+            // Show selected tab content
+            document.getElementById(`${tabName}-content`).classList.remove('hidden');
+            document.getElementById(`${tabName}-content`).classList.add('fade-in');
+
+            // Add active class to selected tab
+            document.getElementById(`tab-${tabName}`).classList.add('tab-active');
+            document.getElementById(`tab-${tabName}`).classList.remove('hover:bg-white');
+
+            currentTab = tabName;
+
+            // Update content based on tab
+            if (tabName === 'employees') {
+                updateEmployeeTable();
+            } else if (tabName === 'attendance') {
+                updateAttendanceList();
+                updateEmployeeSelects();
+            } else if (tabName === 'salary') {
+                updateSalaryTable();
+            } else if (tabName === 'reports') {
+                updateBranchSummary();
+            }
+        }
+
+        // Handle employee form submission
+        function handleEmployeeSubmit(e) {
+            e.preventDefault();
+
+            const branch = document.getElementById('empBranch').value;
+            const name = (document.getElementById('empName').value || '').trim();
+            const joinDateRaw = document.getElementById('empJoinDate').value;
+            const baseSalaryValue = parseNumber(document.getElementById('empBaseSalary26').value);
+            const tncnValue = parseNumber(document.getElementById('empTNCN').value);
+            const insuranceValue = parseNumber(document.getElementById('empInsurance').value) || DEFAULT_INSURANCE_RATE;
+            const taskSalaryValue = parseNumber(document.getElementById('empTaskSalary26').value);
+            const allowanceValue = parseNumber(document.getElementById('empAllowance').value);
+            const task = (document.getElementById('empTask').value || '').trim();
+            const accountNumber = (document.getElementById('empAccountNumber').value || '').trim();
+            const bankName = (document.getElementById('empBankName').value || '').trim();
+            const joinDate = convertDateFormat(joinDateRaw);
+
+            if (!branch || !name || baseSalaryValue <= 0) {
+                showNotification('❌ Vui lòng nhập Chi nhánh, Tên nhân viên và Lương CB/26 ngày hợp lệ!', 'error');
+                return;
+            }
+
+            if (!joinDate) {
+                showNotification('❌ Ngày vào làm không hợp lệ. Vui lòng nhập theo định dạng DD/MM/YYYY hoặc DDMMYYYY.', 'error');
+                return;
+            }
+
+            const codeInput = document.getElementById('empCode');
+            const codeValue = (codeInput?.value || '').trim() || generateEmployeeCode(branch);
+
+            const newEmployee = normalizeEmployee({
+                code: codeValue,
+                name,
+                branch,
+                joinDate,
+                tncn: tncnValue,
+                insurance: insuranceValue,
+                baseSalary26: baseSalaryValue,
+                taskSalary26: taskSalaryValue,
+                allowance: allowanceValue,
+                task,
+                accountNumber,
+                bankName
+            });
+
+            if (!newEmployee) {
+                showNotification('❌ Không thể tạo nhân viên. Kiểm tra lại dữ liệu!', 'error');
+                return;
+            }
+
+            const updatedEmployees = [...getEmployees(), newEmployee];
+            setEmployees(updatedEmployees);
+            saveData();
+
+            showNotification(`✅ Đã thêm nhân viên ${newEmployee.code} thành công!`, 'success');
+
+            document.getElementById('employeeForm').reset();
+            document.getElementById('empBranch').value = branch;
+            refreshEmployeeCodePreview();
+            bindInsurancePreview();
+
+            updateDashboard();
+            updateEmployeeTable();
+            updateEmployeeSelects();
+        }
+
+        // Handle attendance form submission
+        function handleAttendanceSubmit(e) {
+            e.preventDefault();
+
+            const employeeCode = document.getElementById('attEmployeeSelect').value;
+            if (!employeeCode) {
+                showNotification('❌ Vui lòng chọn nhân viên!', 'error');
+                return;
+            }
+
+            const productivityBonus = parseInt(document.getElementById('productivityBonus').value) || 0;
+            const marketBonus = parseInt(document.getElementById('marketBonus').value) || 0;
+            const totalBonus = productivityBonus + marketBonus;
+
+            const attendanceData = {
+                employeeCode: employeeCode,
+                workDays: parseFloat(document.getElementById('workDays').value) || 0,
+                overtime15: parseFloat(document.getElementById('overtime15').value) || 0,
+                overtime2: parseFloat(document.getElementById('overtime2').value) || 0,
+                overtime3: parseFloat(document.getElementById('overtime3').value) || 0,
+                bonus: totalBonus, // Combined bonus from Năng Suất + Chợ
+                advance: parseInt(document.getElementById('advance').value) || 0,
+                note: document.getElementById('attendanceNote').value || '',
+                timestamp: new Date().toISOString()
+            };
+
+            // Remove existing attendance record for this employee
+            attendanceRecords = attendanceRecords.filter(record => record.employeeCode !== employeeCode);
+            
+            // Add new attendance record
+            attendanceRecords.push(attendanceData);
+            
+            saveData();
+            showNotification(`✅ Đã lưu chấm công cho ${employeeCode} thành công!`, 'success');
+            
+            // Reset form
+            document.getElementById('attendanceForm').reset();
+            
+            // Update displays
+            updateDashboard();
+            updateAttendanceList();
+            updateSalaryTable();
+        }
+
+        // Update employee table
+        function updateEmployeeTable() {
+            const tbody = document.getElementById('employeeTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const data = getEmployees();
+            if (!data.length) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `
+                    <td colspan="14" class="px-4 py-6 text-center text-sm text-gray-500">
+                        Chưa có nhân viên nào. Hãy thêm mới hoặc nhập từ Excel.
+                    </td>
+                `;
+                tbody.appendChild(emptyRow);
+                return;
+            }
+
+            data.forEach((emp, index) => {
+                const branchLabel = branchNames[emp.branch] || emp.branch || '';
+                const joinDateDisplay = formatDateForDisplay(emp.joinDate);
+                const tncnValue = Number(emp.tncn || 0);
+                const insuranceValue = Number(emp.insurance || DEFAULT_INSURANCE_RATE);
+                const insuranceAmount = computeInsuranceAmount(emp.baseSalary26, insuranceValue);
+                const baseSalaryFormatted = parseNumber(emp.baseSalary26).toLocaleString('vi-VN');
+                const taskSalaryFormatted = parseNumber(emp.taskSalary26).toLocaleString('vi-VN');
+                const allowanceFormatted = parseNumber(emp.allowance).toLocaleString('vi-VN');
+
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${branchLabel}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${emp.code}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${emp.name}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${joinDateDisplay}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${tncnValue}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${insuranceValue}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${insuranceAmount.toLocaleString('vi-VN')}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${baseSalaryFormatted}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${taskSalaryFormatted}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${allowanceFormatted}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${emp.task || ''}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${emp.accountNumber || ''}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${emp.bankName || ''}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Update employee selects
+        function updateEmployeeSelects() {
+            const select = document.getElementById('attEmployeeSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Chọn nhân viên --</option>';
+
+            getEmployees().forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.code;
+                option.textContent = `${emp.code} - ${emp.name}`;
+                select.appendChild(option);
+            });
+        }
+
+        // Update attendance list
+        function updateAttendanceList() {
+            const list = document.getElementById('attendanceList');
+            if (!list) return;
+            list.innerHTML = '';
+
+            const records = getAttendance();
+            if (!records.length) {
+                list.innerHTML = '<p class="text-gray-500 text-center py-8">Chưa có dữ liệu chấm công</p>';
+                return;
+            }
+
+            const employeeMap = new Map(getEmployees().map(emp => [emp.code, emp]));
+
+            records.forEach(record => {
+                const employee = employeeMap.get(record.employeeCode);
+                if (!employee) return;
+
+                const totalOvertime = parseNumber(record.overtime15) + parseNumber(record.overtime2) + parseNumber(record.overtime3);
+
+                const item = document.createElement('div');
+                item.className = 'bg-gray-50 p-4 rounded-lg border';
+                item.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h4 class="font-medium text-gray-900">${employee.name}</h4>
+                            <p class="text-sm text-gray-500">${employee.code} - ${branchNames[employee.branch]}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-gray-400">${new Date(record.timestamp).toLocaleDateString('vi-VN')}</span>
+                            <button onclick="deleteAttendance('${record.employeeCode}')" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-medium transition-colors">
+                                🗑️ Xóa
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">Ngày làm:</span>
+                            <span class="font-medium">${record.workDays} ngày</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Tổng TC:</span>
+                            <span class="font-medium">${totalOvertime} giờ</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Thưởng (TM+Chợ):</span>
+                            <span class="font-medium text-green-600">${formatCurrency(record.bonus)}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Ứng:</span>
+                            <span class="font-medium text-red-600">${formatCurrency(record.advance)}</span>
+                        </div>
+                    </div>
+                    ${record.note ? `<div class="mt-2 text-sm text-gray-600"><strong>Ghi chú:</strong> ${record.note}</div>` : ''}
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Calculate all salaries
+        function calculateAllSalaries() {
+            showNotification('🧮 Đang tính lương cho tất cả nhân viên...', 'info');
+            updateSalaryTable();
+            showNotification('✅ Đã tính lương xong!', 'success');
+        }
+
+        // Update salary table
+        function updateSalaryTable() {
+            const tbody = document.getElementById('salaryTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const employeesData = getEmployees();
+            const attendanceMap = new Map(getAttendance().map(att => [att.employeeCode, att]));
+
+            employeesData.forEach(emp => {
+                const attendance = attendanceMap.get(emp.code);
+
+                if (!attendance) {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-gray-50';
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${emp.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${branchNames[emp.branch]}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center" colspan="6">Chưa có dữ liệu chấm công</td>
+                    `;
+                    tbody.appendChild(row);
+                    return;
+                }
+
+                const workDays = parseNumber(attendance.workDays);
+                const overtime15 = parseNumber(attendance.overtime15);
+                const overtime2 = parseNumber(attendance.overtime2);
+                const overtime3 = parseNumber(attendance.overtime3);
+                const bonus = parseNumber(attendance.bonus);
+                const advance = parseNumber(attendance.advance);
+                const allowance = parseNumber(emp.allowance);
+
+                const baseSalary = parseNumber(emp.baseSalary);
+                const taskSalary = parseNumber(emp.taskSalary);
+                const dailySalary = baseSalary / 26;
+                const hourlySalary = dailySalary / 8;
+
+                const baseSalaryAmount = dailySalary * workDays;
+                const taskSalaryAmount = (taskSalary / 26) * workDays;
+                const overtime15Amount = hourlySalary * 1.5 * overtime15;
+                const overtime2Amount = hourlySalary * 2 * overtime2;
+                const overtime3Amount = hourlySalary * 3 * overtime3;
+                const totalOvertimeAmount = overtime15Amount + overtime2Amount + overtime3Amount;
+
+                const taxableAmount = baseSalaryAmount + taskSalaryAmount + totalOvertimeAmount;
+                const tncnAmount = emp.tncn > 0 ? taxableAmount * (emp.tncn / 100) : 0;
+                const insuranceAmount = emp.insurance > 0 ? baseSalary * (emp.insurance / 100) : 0;
+
+                const netSalary = baseSalaryAmount + taskSalaryAmount + allowance + bonus + totalOvertimeAmount - tncnAmount - insuranceAmount - advance;
+                const totalOvertimeHours = overtime15 + overtime2 + overtime3;
+
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${emp.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${branchNames[emp.branch]}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${workDays}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${totalOvertimeHours}h</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatCurrency(baseSalaryAmount + taskSalaryAmount)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatCurrency(totalOvertimeAmount)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600">${formatCurrency(bonus + allowance)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">${formatCurrency(netSalary)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Update dashboard
+        function updateDashboard() {
+            let totalSalary = 0;
+            let totalOvertime = 0;
+
+            const attendanceMap = new Map(getAttendance().map(att => [att.employeeCode, att]));
+            const employeesData = getEmployees();
+
+            employeesData.forEach(emp => {
+                const attendance = attendanceMap.get(emp.code);
+                if (!attendance) return;
+
+                const workDays = parseNumber(attendance.workDays);
+                const overtime15 = parseNumber(attendance.overtime15);
+                const overtime2 = parseNumber(attendance.overtime2);
+                const overtime3 = parseNumber(attendance.overtime3);
+                const bonus = parseNumber(attendance.bonus);
+                const advance = parseNumber(attendance.advance);
+                const allowance = parseNumber(emp.allowance);
+
+                const baseSalary = parseNumber(emp.baseSalary);
+                const taskSalary = parseNumber(emp.taskSalary);
+                const dailySalary = baseSalary / 26;
+                const hourlySalary = dailySalary / 8;
+
+                const baseSalaryAmount = dailySalary * workDays;
+                const taskSalaryAmount = (taskSalary / 26) * workDays;
+                const overtime15Amount = hourlySalary * 1.5 * overtime15;
+                const overtime2Amount = hourlySalary * 2 * overtime2;
+                const overtime3Amount = hourlySalary * 3 * overtime3;
+                const totalOvertimeAmount = overtime15Amount + overtime2Amount + overtime3Amount;
+
+                const taxableAmount = baseSalaryAmount + taskSalaryAmount + totalOvertimeAmount;
+                const tncnAmount = emp.tncn > 0 ? taxableAmount * (emp.tncn / 100) : 0;
+                const insuranceAmount = emp.insurance > 0 ? baseSalary * (emp.insurance / 100) : 0;
+
+                const netSalary = baseSalaryAmount + taskSalaryAmount + allowance + bonus + totalOvertimeAmount - tncnAmount - insuranceAmount - advance;
+
+                totalSalary += netSalary;
+                totalOvertime += overtime15 + overtime2 + overtime3;
+            });
+
+            document.getElementById('totalSalary').textContent = formatCurrency(totalSalary);
+            document.getElementById('totalEmployees').textContent = employeesData.length;
+            document.getElementById('totalOvertime').textContent = `${totalOvertime.toFixed(1)} giờ`;
+        }
+// Update branch summary
+        function updateBranchSummary() {
+            const summary = document.getElementById('branchSummary');
+            if (!summary) return;
+            summary.innerHTML = '';
+
+            const branches = ['vpsg', 'xuonganha', 'xuonglongxuyen', 'hanoi'];
+            const employeesData = getEmployees();
+            const attendanceMap = new Map(getAttendance().map(att => [att.employeeCode, att]));
+
+            branches.forEach(branchCode => {
+                const branchEmployees = employeesData.filter(emp => emp.branch === branchCode);
+                let branchSalary = 0;
+                let branchOvertime = 0;
+
+                branchEmployees.forEach(emp => {
+                    const attendance = attendanceMap.get(emp.code);
+                    if (!attendance) return;
+
+                    const workDays = parseNumber(attendance.workDays);
+                    const overtime15 = parseNumber(attendance.overtime15);
+                    const overtime2 = parseNumber(attendance.overtime2);
+                    const overtime3 = parseNumber(attendance.overtime3);
+                    const bonus = parseNumber(attendance.bonus);
+                    const advance = parseNumber(attendance.advance);
+                    const allowance = parseNumber(emp.allowance);
+
+                    const baseSalary = parseNumber(emp.baseSalary);
+                    const taskSalary = parseNumber(emp.taskSalary);
+                    const dailySalary = baseSalary / 26;
+                    const hourlySalary = dailySalary / 8;
+
+                    const baseSalaryAmount = dailySalary * workDays;
+                    const taskSalaryAmount = (taskSalary / 26) * workDays;
+                    const overtime15Amount = hourlySalary * 1.5 * overtime15;
+                    const overtime2Amount = hourlySalary * 2 * overtime2;
+                    const overtime3Amount = hourlySalary * 3 * overtime3;
+                    const totalOvertimeAmount = overtime15Amount + overtime2Amount + overtime3Amount;
+
+                    const taxableAmount = baseSalaryAmount + taskSalaryAmount + totalOvertimeAmount;
+                    const tncnAmount = emp.tncn > 0 ? taxableAmount * (emp.tncn / 100) : 0;
+                    const insuranceAmount = emp.insurance > 0 ? baseSalary * (emp.insurance / 100) : 0;
+
+                    const netSalary = baseSalaryAmount + taskSalaryAmount + allowance + bonus + totalOvertimeAmount - tncnAmount - insuranceAmount - advance;
+
+                    branchSalary += netSalary;
+                    branchOvertime += overtime15 + overtime2 + overtime3;
+                });
+
+                const item = document.createElement('div');
+                item.className = 'bg-gray-50 p-4 rounded-lg border';
+                item.innerHTML = 
+                    <h4 class="font-medium text-gray-900 mb-2"></h4>
+                    <div class="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">Nhân viên:</span>
+                            <span class="font-medium"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Tổng lương:</span>
+                            <span class="font-medium text-green-600"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">Tăng ca:</span>
+                            <span class="font-medium"> giờ</span>
+                        </div>
+                    </div>
+                ;
+
+                summary.appendChild(item);
+            });
+        }        // Export salary report
+        function exportSalaryReport() {
+            if (employees.length === 0) {
+                showNotification('❌ Không có dữ liệu để xuất!', 'error');
+                return;
+            }
+
+            const workbook = XLSX.utils.book_new();
+            const worksheetData = [];
+
+            // Header - Updated to match new format
+            worksheetData.push([
+                'Ngày Vào Làm', 'Chi Nhánh', 'Mã Nhân Viên', 'Tên Nhân Viên', 'Số Ngày Làm', 'Năng Suất (VNĐ)', 
+                'TC 1.5 (giờ)', 'TC 2 (giờ)', 'TC 3 (giờ)', 'Chợ (VNĐ)', 'Ứng Lương (VNĐ)', 
+                'Nghỉ CP (ngày)', 'Nghỉ KP (ngày)', 'Nghỉ HL (ngày)', 'Tổng Lương', 'Ghi Chú'
+            ]);
+
+            // Data
+            employees.forEach((emp, index) => {
+                const attendance = attendanceRecords.find(att => att.employeeCode === emp.code);
+                
+                if (attendance) {
+                    const dailySalary = emp.baseSalary / 26;
+                    const hourlySalary = dailySalary / 8;
+                    
+                    const baseSalaryAmount = dailySalary * attendance.workDays;
+                    const taskSalaryAmount = (emp.taskSalary || 0) / 26 * attendance.workDays;
+                    const overtime15Amount = hourlySalary * 1.5 * attendance.overtime15;
+                    const overtime2Amount = hourlySalary * 2 * attendance.overtime2;
+                    const overtime3Amount = hourlySalary * 3 * attendance.overtime3;
+                    const totalOvertimeAmount = overtime15Amount + overtime2Amount + overtime3Amount;
+                    
+                    // Base for tax calculation: Lương CB + Thưởng NV + Tăng Ca
+                    const taxableAmount = baseSalaryAmount + taskSalaryAmount + totalOvertimeAmount;
+                    
+                    let tncnAmount = 0;
+                    let insuranceAmount = 0;
+                    
+                    if (emp.tncn > 0) {
+                        tncnAmount = taxableAmount * (emp.tncn / 100);
+                    }
+                    
+                    if (emp.insurance > 0) {
+                        insuranceAmount = emp.baseSalary * (emp.insurance / 100);
+                    }
+                    
+                    const netSalary = baseSalaryAmount + taskSalaryAmount + attendance.bonus + totalOvertimeAmount - tncnAmount - insuranceAmount - attendance.advance;
+
+                    worksheetData.push([
+                        formatDateForDisplay(emp.joinDate), // Use formatted join date
+                        branchNames[emp.branch],
+                        emp.code,
+                        emp.name,
+                        attendance.workDays,
+                        0, // Năng Suất - will be filled from attendance.bonus breakdown
+                        attendance.overtime15,
+                        attendance.overtime2,
+                        attendance.overtime3,
+                        attendance.bonus, // Chợ - total bonus for now
+                        attendance.advance,
+                        0, // Nghỉ CP (placeholder)
+                        0, // Nghỉ KP (placeholder)
+                        0, // Nghỉ HL (placeholder)
+                        Math.round(netSalary),
+                        attendance.note || ''
+                    ]);
+                }
+            });
+
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            
+            // Set column widths
+            worksheet['!cols'] = [
+                { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 20 }, { wch: 12 }, { wch: 15 }, 
+                { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 15 }, 
+                { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 20 }
+            ];
+            
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Bảng Lương');
+            
+            const fileName = `bang-luong-tat-ca-${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            
+            showNotification('📊 Đã xuất bảng lương Excel thành công!', 'success');
+        }
+
+        // Export salary report by branch
+        function exportSalaryByBranch(branchCode) {
+            const branchEmployees = employees.filter(emp => emp.branch === branchCode);
+            
+            if (branchEmployees.length === 0) {
+                showNotification(`❌ Không có nhân viên nào ở ${branchNames[branchCode]}!`, 'error');
+                return;
+            }
+
+            const workbook = XLSX.utils.book_new();
+            const worksheetData = [];
+
+            // Header
+            worksheetData.push([
+                'Ngày Vào Làm', 'Chi Nhánh', 'Mã Nhân Viên', 'Tên Nhân Viên', 'Số Ngày Làm', 'Năng Suất (VNĐ)', 
+                'TC 1.5 (giờ)', 'TC 2 (giờ)', 'TC 3 (giờ)', 'Chợ (VNĐ)', 'Ứng Lương (VNĐ)', 
+                'Nghỉ CP (ngày)', 'Nghỉ KP (ngày)', 'Nghỉ HL (ngày)', 'Tổng Lương', 'Ghi Chú'
+            ]);
+
+            // Data for branch employees only
+            branchEmployees.forEach((emp, index) => {
+                const attendance = attendanceRecords.find(att => att.employeeCode === emp.code);
+                
+                if (attendance) {
+                    const dailySalary = emp.baseSalary / 26;
+                    const hourlySalary = dailySalary / 8;
+                    
+                    const baseSalaryAmount = dailySalary * attendance.workDays;
+                    const taskSalaryAmount = (emp.taskSalary || 0) / 26 * attendance.workDays;
+                    const overtime15Amount = hourlySalary * 1.5 * attendance.overtime15;
+                    const overtime2Amount = hourlySalary * 2 * attendance.overtime2;
+                    const overtime3Amount = hourlySalary * 3 * attendance.overtime3;
+                    const totalOvertimeAmount = overtime15Amount + overtime2Amount + overtime3Amount;
+                    
+                    // Base for tax calculation: Lương CB + Thưởng NV + Tăng Ca
+                    const taxableAmount = baseSalaryAmount + taskSalaryAmount + totalOvertimeAmount;
+                    
+                    let tncnAmount = 0;
+                    let insuranceAmount = 0;
+                    
+                    if (emp.tncn > 0) {
+                        tncnAmount = taxableAmount * (emp.tncn / 100);
+                    }
+                    
+                    if (emp.insurance > 0) {
+                        insuranceAmount = emp.baseSalary * (emp.insurance / 100);
+                    }
+                    
+                    const netSalary = baseSalaryAmount + taskSalaryAmount + attendance.bonus + totalOvertimeAmount - tncnAmount - insuranceAmount - attendance.advance;
+
+                    worksheetData.push([
+                        formatDateForDisplay(emp.joinDate), // Use formatted join date
+                        branchNames[emp.branch],
+                        emp.code,
+                        emp.name,
+                        attendance.workDays,
+                        0, // Năng Suất - placeholder
+                        attendance.overtime15,
+                        attendance.overtime2,
+                        attendance.overtime3,
+                        attendance.bonus, // Chợ - total bonus for now
+                        attendance.advance,
+                        0, // Nghỉ CP (placeholder)
+                        0, // Nghỉ KP (placeholder)
+                        0, // Nghỉ HL (placeholder)
+                        Math.round(netSalary),
+                        attendance.note || ''
+                    ]);
+                } else {
+                    // Add employee without attendance data
+                    worksheetData.push([
+                        formatDateForDisplay(emp.joinDate),
+                        branchNames[emp.branch],
+                        emp.code,
+                        emp.name,
+                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Chưa có dữ liệu chấm công'
+                    ]);
+                }
+            });
+
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            
+            // Set column widths
+            worksheet['!cols'] = [
+                { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 20 }, { wch: 12 }, { wch: 15 }, 
+                { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 15 }, 
+                { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 20 }
+            ];
+            
+            XLSX.utils.book_append_sheet(workbook, worksheet, `Lương ${branchNames[branchCode]}`);
+            
+            const fileName = `bang-luong-${branchCode}-${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            
+            showNotification(`📊 Đã xuất bảng lương ${branchNames[branchCode]} thành công!`, 'success');
+        }
+
+        // Export employee list
+        function exportEmployeeList() {
+            if (employees.length === 0) {
+                showNotification('❌ Không có dữ liệu để xuất!', 'error');
+                return;
+            }
+
+            const workbook = XLSX.utils.book_new();
+            const worksheetData = [];
+
+            // Header
+            worksheetData.push([
+                'Ngày Vào Làm', 'Chi Nhánh', 'Mã Nhân Viên', 'Tên Nhân Viên', 'TNCN (%)', 'Bảo Hiểm (%)', 'Lương CB/26 ngày', 'Lương Nhiệm Vụ/26 ngày', 'Nhiệm Vụ', 'Số TK', 'Ngân Hàng'
+            ]);
+
+            // Data
+            employees.forEach((emp, index) => {
+                worksheetData.push([
+                    formatDateForDisplay(emp.joinDate), // Use formatted join date
+                    branchNames[emp.branch],
+                    emp.code,
+                    emp.name,
+                    emp.tncn,
+                    emp.insurance,
+                    emp.baseSalary,
+                    emp.taskSalary || 0,
+                    emp.task || '',
+                    emp.accountNumber || '',
+                    emp.bankName || ''
+                ]);
+            });
+
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            
+            // Set column widths
+            worksheet['!cols'] = [
+                { wch: 12 }, // Ngày Vào Làm
+                { wch: 15 }, // Chi Nhánh
+                { wch: 12 }, // Mã Nhân Viên
+                { wch: 20 }, // Tên Nhân Viên
+                { wch: 10 }, // TNCN
+                { wch: 12 }, // Bảo Hiểm
+                { wch: 15 }, // Lương CB
+                { wch: 18 }, // Lương Nhiệm Vụ
+                { wch: 15 }, // Nhiệm Vụ
+                { wch: 15 }, // Số TK
+                { wch: 15 }  // Ngân Hàng
+            ];
+            
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh Sách NV');
+            
+            const fileName = `danh-sach-nv-${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            
+            showNotification('👥 Đã xuất danh sách nhân viên Excel thành công!', 'success');
+        }
+
+        // Backup data
+        function backupData() {
+            const data = {
+                employees: getEmployees(),
+                attendanceRecords: getAttendance(),
+                timestamp: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `salary-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+
+            showNotification('💾 Đã tải file sao lưu thành công!', 'success');
+        }
+
+        // Confirm clear data
+        function confirmClearData() {
+            if (confirm('⚠️ Bạn có chắc chắn muốn xóa TẤT CẢ dữ liệu không?\n\nHành động này không thể hoàn tác!')) {
+                clearAllData();
+            }
+        }
+
+        // Clear all data
+        function clearAllData() {
+            setEmployees([]);
+            setAttendance([]);
+            localStorage.removeItem(STORAGE_KEY);
+
+            updateDashboard();
+            updateEmployeeTable();
+            updateSalaryTable();
+            updateBranchSummary();
+            updateEmployeeSelects();
+
+            refreshEmployeeCodePreview();
+
+            showNotification('🗑️ Đã xóa tất cả dữ liệu!', 'success');
+        }
+
+        // Delete employee function
+        function deleteEmployee(employeeCode) {
+            const employee = getEmployees().find(emp => emp.code === employeeCode);
+            if (!employee) {
+                showNotification('❌ Không tìm thấy nhân viên!', 'error');
+                return;
+            }
+
+            // Create custom confirmation modal
+            const confirmModal = document.createElement('div');
+            confirmModal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center';
+            confirmModal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Xác Nhận Xóa Nhân Viên</h3>
+                    <p class="text-gray-600 text-center mb-6">
+                        Bạn có chắc chắn muốn xóa nhân viên <strong>${employee.name}</strong> (${employeeCode})?<br>
+                        <span class="text-red-600 text-sm">Hành động này không thể hoàn tác!</span>
+                    </p>
+                    <div class="flex space-x-3">
+                        <button onclick="cancelDelete()" class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors font-medium">
+                            Hủy
+                        </button>
+                        <button onclick="confirmDeleteEmployee('${employeeCode}')" class="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors font-medium">
+                            Xóa
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(confirmModal);
+        }
+
+        // Confirm delete employee
+        function confirmDeleteEmployee(employeeCode) {
+            setEmployees(getEmployees().filter(emp => emp.code !== employeeCode));
+            setAttendance(getAttendance().filter(record => record.employeeCode !== employeeCode));
+            saveData();
+            
+            // Update displays
+            updateDashboard();
+            updateEmployeeTable();
+            updateEmployeeSelects();
+            updateAttendanceList();
+            updateSalaryTable();
+            updateBranchSummary();
+            
+            // Remove modal
+            cancelDelete();
+            
+            showNotification(`✅ Đã xóa nhân viên ${employeeCode} thành công!`, 'success');
+        }
+
+        // Delete attendance function
+        function deleteAttendance(employeeCode) {
+            const employee = getEmployees().find(emp => emp.code === employeeCode);
+            if (!employee) {
+                showNotification('❌ Không tìm thấy nhân viên!', 'error');
+                return;
+            }
+
+            // Create custom confirmation modal
+            const confirmModal = document.createElement('div');
+            confirmModal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center';
+            confirmModal.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="bg-orange-100 p-3 rounded-full">
+                            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Xác Nhận Xóa Chấm Công</h3>
+                    <p class="text-gray-600 text-center mb-6">
+                        Bạn có chắc chắn muốn xóa dữ liệu chấm công của <strong>${employee.name}</strong> (${employeeCode})?<br>
+                        <span class="text-orange-600 text-sm">Hành động này không thể hoàn tác!</span>
+                    </p>
+                    <div class="flex space-x-3">
+                        <button onclick="cancelDelete()" class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors font-medium">
+                            Hủy
+                        </button>
+                        <button onclick="confirmDeleteAttendance('${employeeCode}')" class="flex-1 bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors font-medium">
+                            Xóa
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(confirmModal);
+        }
+
+        // Confirm delete attendance
+        function confirmDeleteAttendance(employeeCode) {
+            setAttendance(getAttendance().filter(record => record.employeeCode !== employeeCode));
+            saveData();
+            
+            // Update displays
+            updateDashboard();
+            updateAttendanceList();
+            updateSalaryTable();
+            updateBranchSummary();
+            
+            // Remove modal
+            cancelDelete();
+            
+            showNotification(`✅ Đã xóa chấm công của ${employeeCode} thành công!`, 'success');
+        }
+
+        // Cancel delete modal
+        function cancelDelete() {
+            const modal = document.querySelector('.fixed.inset-0.bg-black.bg-opacity-50');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // Download employee template
+        function downloadEmployeeTemplate() {
+            const workbook = XLSX.utils.book_new();
+            const headers = [
+                'Ngày Vào Làm',
+                'Chi Nhánh',
+                'Mã Nhân Viên',
+                'Tên Nhân Viên',
+                'TNCN (%)',
+                'Bảo Hiểm (%)',
+                'Lương CB/26 ngày',
+                'Lương Nhiệm Vụ/26 ngày',
+                'Phụ cấp',
+                'Nhiệm Vụ',
+                'STK',
+                'Ngân Hàng'
+            ];
+
+            const worksheet = XLSX.utils.aoa_to_sheet([headers]);
+
+            worksheet['!cols'] = [
+                { wch: 15 }, // Ngày Vào Làm
+                { wch: 18 }, // Chi Nhánh
+                { wch: 14 }, // Mã Nhân Viên
+                { wch: 24 }, // Tên Nhân Viên
+                { wch: 10 }, // TNCN
+                { wch: 12 }, // Bảo Hiểm
+                { wch: 18 }, // Lương CB/26
+                { wch: 20 }, // Lương Nhiệm Vụ/26
+                { wch: 16 }, // Phụ cấp
+                { wch: 18 }, // Nhiệm Vụ
+                { wch: 18 }, // STK
+                { wch: 18 }  // Ngân Hàng
+            ];
+
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Mẫu Nhân Viên');
+            
+            const fileName = `mau-nhan-vien-${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            
+            showNotification('📄 Đã tải mẫu nhân viên Excel thành công!', 'success');
+        }
+
+        // Import employee Excel
+        function importEmployeeExcel(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }).slice(1);
+
+                    const currentEmployees = getEmployees();
+                    const nameSet = new Set(currentEmployees.map(emp => normalizeVN(emp.name)));
+                    const reservedCodes = new Set(currentEmployees.map(emp => emp.code));
+
+                    const importedEmployees = [];
+                    const conflicts = [];
+
+                    rows.forEach(row => {
+                        if (!row || row.length === 0) return;
+
+                        const joinDateRaw = row[0];
+                        const branchName = row[1];
+                        const nameValue = (row[3] || '').toString().trim();
+                        const tncnValue = row[4];
+                        const insuranceValue = row[5];
+                        const baseSalaryValue = row[6];
+                        const taskSalaryValue = row[7];
+                        const allowanceValue = row[8];
+                        const taskValue = row[9];
+                        const accountNumberValue = row[10];
+                        const bankNameValue = row[11];
+
+                        if (!nameValue) return;
+
+                        const branchCode = mapBranch(branchName) || (branchNames[branchName] ? branchName : null);
+                        const baseSalary = parseNumber(baseSalaryValue);
+                        if (!branchCode || baseSalary <= 0) return;
+
+                        const nameKey = normalizeVN(nameValue);
+                        if (nameSet.has(nameKey)) {
+                            conflicts.push(nameValue);
+                            return;
+                        }
+
+                        const normalized = normalizeEmployee({
+                            branch: branchCode,
+                            name: nameValue,
+                            joinDate: joinDateRaw,
+                            tncn: tncnValue,
+                            insurance: insuranceValue,
+                            baseSalary26: baseSalary,
+                            taskSalary26: taskSalaryValue,
+                            allowance: allowanceValue,
+                            task: taskValue,
+                            accountNumber: accountNumberValue,
+                            bankName: bankNameValue
+                        });
+
+                        if (!normalized) return;
+
+                        const code = generateEmployeeCode(normalized.branch, reservedCodes);
+                        reservedCodes.add(code);
+                        normalized.code = code;
+                        importedEmployees.push(normalized);
+                        nameSet.add(nameKey);
+                    });
+
+                    if (importedEmployees.length) {
+                        setEmployees(currentEmployees.concat(importedEmployees));
+                        saveData();
+                        updateDashboard();
+                        updateEmployeeTable();
+                        updateEmployeeSelects();
+                        updateBranchSummary();
+                        showNotification(`✅ Đã nhập ${importedEmployees.length} nhân viên (mã tự cấp theo chi nhánh)!`, 'success');
+                    }
+
+                    if (conflicts.length) {
+                        showImportConflictWarning(conflicts);
+                        showNotification('⚠️ Có nhân viên trùng tên. Vui lòng nhập tay mã NV cho các tên trùng.', 'warning');
+                    } else {
+                        showImportConflictWarning([]);
+                    }
+
+                    if (!importedEmployees.length && !conflicts.length) {
+                        showNotification('❌ Không có dữ liệu hợp lệ để nhập!', 'error');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    showNotification('❌ Lỗi đọc file Excel! Kiểm tra định dạng.', 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            event.target.value = '';
+        }
+
+        function showImportConflictWarning(conflictNames = []) {
+            const container = document.getElementById('import-warnings');
+            if (!container) return;
+
+            if (!conflictNames.length) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const uniqueNames = Array.from(new Set(conflictNames));
+            container.innerHTML = `
+                <div class="p-3 border border-yellow-300 bg-yellow-50 rounded">
+                    <p class="text-xs text-yellow-800">
+                        ⚠️ Phát hiện <strong>${uniqueNames.length}</strong> nhân viên trùng tên với dữ liệu hiện có.
+                        Vui lòng nhập tay mã NV cho các tên sau trước khi thêm thủ công:
+                    </p>
+                    <ul class="mt-2 pl-4 list-disc text-xs text-yellow-900">
+                        ${uniqueNames.map(name => `<li>${name}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Show attendance template modal
+        function showAttendanceTemplateModal() {
+            const modal = document.getElementById('branchModal');
+            const branchOptions = document.getElementById('branchOptions');
+            
+            // Clear existing options
+            branchOptions.innerHTML = '';
+            
+            // Add "All Branches" option
+            const allOption = document.createElement('button');
+            allOption.className = 'w-full text-left p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors mb-3';
+            allOption.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="font-medium text-blue-900">🏢 Tất Cả Chi Nhánh</h4>
+                        <p class="text-sm text-blue-700">Xuất mẫu chấm công cho toàn bộ nhân viên</p>
+                    </div>
+                    <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">${employees.length} NV</div>
+                </div>
+            `;
+            allOption.onclick = () => downloadAttendanceTemplate('all');
+            branchOptions.appendChild(allOption);
+            
+            // Add individual branch options with fixed styling
+            const branchConfigs = [
+                { code: 'vpsg', icon: '📍', bgColor: 'bg-purple-50', hoverColor: 'hover:bg-purple-100', borderColor: 'border-purple-200', textColor: 'text-purple-900', descColor: 'text-purple-700', badgeBg: 'bg-purple-100', badgeText: 'text-purple-800' },
+                { code: 'xuonganha', icon: '📍', bgColor: 'bg-green-50', hoverColor: 'hover:bg-green-100', borderColor: 'border-green-200', textColor: 'text-green-900', descColor: 'text-green-700', badgeBg: 'bg-green-100', badgeText: 'text-green-800' },
+                { code: 'xuonglongxuyen', icon: '📍', bgColor: 'bg-orange-50', hoverColor: 'hover:bg-orange-100', borderColor: 'border-orange-200', textColor: 'text-orange-900', descColor: 'text-orange-700', badgeBg: 'bg-orange-100', badgeText: 'text-orange-800' },
+                { code: 'hanoi', icon: '📍', bgColor: 'bg-indigo-50', hoverColor: 'hover:bg-indigo-100', borderColor: 'border-indigo-200', textColor: 'text-indigo-900', descColor: 'text-indigo-700', badgeBg: 'bg-indigo-100', badgeText: 'text-indigo-800' }
+            ];
+            
+            branchConfigs.forEach(config => {
+                const branchEmployees = employees.filter(emp => emp.branch === config.code);
+                
+                const option = document.createElement('button');
+                option.className = `w-full text-left p-4 ${config.bgColor} ${config.hoverColor} rounded-lg border ${config.borderColor} transition-colors mb-2`;
+                option.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-medium ${config.textColor}">${config.icon} ${branchNames[config.code]}</h4>
+                            <p class="text-sm ${config.descColor}">Chỉ nhân viên ${branchNames[config.code]}</p>
+                        </div>
+                        <div class="${config.badgeBg} ${config.badgeText} px-3 py-1 rounded-full text-sm font-bold">${branchEmployees.length} NV</div>
+                    </div>
+                `;
+                option.onclick = () => downloadAttendanceTemplate(config.code);
+                branchOptions.appendChild(option);
+            });
+            
+            modal.classList.remove('hidden');
+        }
+
+        // Hide attendance template modal
+        function hideBranchModal() {
+            document.getElementById('branchModal').classList.add('hidden');
+        }
+
+        // Download attendance template
+        function downloadAttendanceTemplate(branchFilter = 'all') {
+            hideBranchModal();
+
+            const allEmployees = getEmployees();
+            if (!allEmployees.length) {
+                showNotification('❌ Không có nhân viên nào để tạo mẫu!', 'error');
+                return;
+            }
+
+            let filteredEmployees = allEmployees;
+            if (branchFilter !== 'all') {
+                filteredEmployees = allEmployees.filter(emp => (emp.branch || '') === branchFilter);
+            }
+
+            if (!filteredEmployees.length) {
+                showNotification('❌ Chi nhánh này chưa có nhân viên!', 'error');
+                return;
+            }
+
+            const workbook = XLSX.utils.book_new();
+            const worksheetData = [[
+                'Ngày Vào Làm', 'Chi Nhánh', 'Mã Nhân Viên', 'Tên Nhân Viên', 'Số Ngày Làm', 'TM Năng Suất (VNĐ)',
+                'TC 1.5 (giờ)', 'TC 2 (giờ)', 'TC 3 (giờ)', 'Tiền Chợ (VNĐ)', 'Ứng Lương (VNĐ)',
+                'Nghỉ CP (ngày)', 'Nghỉ KP (ngày)', 'Nghỉ HL (ngày)', 'Ghi Chú'
+            ]];
+
+            filteredEmployees.forEach(emp => {
+                worksheetData.push([
+                    formatDateForDisplay(emp.joinDate),
+                    branchNames[emp.branch] || emp.branch || '',
+                    emp.code,
+                    emp.name,
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    ''
+                ]);
+            });
+
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            worksheet['!cols'] = [
+                { wch: 12 }, { wch: 18 }, { wch: 12 }, { wch: 24 }, { wch: 12 },
+                { wch: 16 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 16 },
+                { wch: 16 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 20 }
+            ];
+
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Mẫu Chấm Công');
+
+            const branchLabel = branchFilter === 'all'
+                ? 'tat-ca-chi-nhanh'
+                : normalizeVN(branchNames[branchFilter] || branchFilter).replace(/\s+/g, '-');
+            const fileName = `mau-cham-cong-${branchLabel}-${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+
+            const displayBranch = branchFilter === 'all'
+                ? 'tất cả chi nhánh'
+                : (branchNames[branchFilter] || branchFilter.toUpperCase());
+            showNotification(`📄 Đã tải mẫu chấm công cho ${displayBranch} thành công!`, 'success');
+        }
+
+        // Import attendance Excel
+        function importAttendanceExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                    // Skip header row
+                    const rows = jsonData.slice(1);
+                    let importCount = 0;
+
+                    rows.forEach(row => {
+                        if (row.length >= 5 && row[2] && row[4]) {
+                            const employeeCode = row[2].toString().toUpperCase();
+                            const workDays = parseFloat(row[4]) || 0;
+                            const productivityBonus = parseInt(row[5]) || 0; // Năng Suất (VNĐ)
+                            const overtime15 = parseFloat(row[6]) || 0;
+                            const overtime2 = parseFloat(row[7]) || 0;
+                            const overtime3 = parseFloat(row[8]) || 0;
+                            const marketBonus = parseInt(row[9]) || 0; // Chợ (VNĐ)
+                            const advance = parseInt(row[10]) || 0;
+                            const note = row[14] ? row[14].toString() : '';
+
+                            // Check if employee exists
+                            const employee = employees.find(emp => emp.code === employeeCode);
+                            if (!employee) {
+                                showNotification(`❌ Không tìm thấy nhân viên "${employeeCode}"!`, 'error');
+                                return;
+                            }
+
+                            // Calculate total bonus (Năng Suất + Chợ)
+                            const totalBonus = productivityBonus + marketBonus;
+
+                            const attendanceData = {
+                                employeeCode: employeeCode,
+                                workDays: workDays,
+                                overtime15: overtime15,
+                                overtime2: overtime2,
+                                overtime3: overtime3,
+                                bonus: totalBonus, // Combined bonus from Năng Suất + Chợ
+                                advance: advance,
+                                note: note,
+                                timestamp: new Date().toISOString()
+                            };
+
+                            // Remove existing attendance record for this employee
+                            attendanceRecords = attendanceRecords.filter(record => record.employeeCode !== employeeCode);
+                            
+                            // Add new attendance record
+                            attendanceRecords.push(attendanceData);
+
+                            importCount++;
+                        }
+                    });
+
+                    if (importCount > 0) {
+                        saveData();
+                        updateDashboard();
+                        updateAttendanceList();
+                        updateSalaryTable();
+                        showNotification(`✅ Đã nhập chấm công cho ${importCount} nhân viên thành công!`, 'success');
+                    } else {
+                        showNotification('❌ Không có dữ liệu hợp lệ để nhập!', 'error');
+                    }
+
+                } catch (error) {
+                    showNotification('❌ Lỗi đọc file Excel! Vui lòng kiểm tra định dạng.', 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            
+            // Reset input
+            event.target.value = '';
+        }
+
+        // Export bank statement for all employees
+        function exportBankStatement() {
+            if (employees.length === 0) {
+                showNotification('❌ Không có dữ liệu để xuất!', 'error');
+                return;
+            }
+
+            const workbook = XLSX.utils.book_new();
+            const worksheetData = [];
+
+            // Header for bank statement
+            worksheetData.push([
+                'STT', 'Tên Nhân Viên', 'Chi Nhánh', 'Số Tài Khoản', 'Ngân Hàng', 'Số Tiền Chuyển', 'Nội Dung Chuyển Khoản'
+            ]);
+
+            let totalAmount = 0;
+            let stt = 1;
+
+            // Data for all employees with attendance
+            employees.forEach(emp => {
+                const attendance = attendanceRecords.find(att => att.employeeCode === emp.code);
+                
+                if (attendance) {
+                    const dailySalary = emp.baseSalary / 26;
+                    const hourlySalary = dailySalary / 8;
+                    
+                    const baseSalaryAmount = dailySalary * attendance.workDays;
+                    const taskSalaryAmount = (emp.taskSalary || 0) / 26 * attendance.workDays;
+                    const overtime15Amount = hourlySalary * 1.5 * attendance.overtime15;
+                    const overtime2Amount = hourlySalary * 2 * attendance.overtime2;
+                    const overtime3Amount = hourlySalary * 3 * attendance.overtime3;
+                    const totalOvertimeAmount = overtime15Amount + overtime2Amount + overtime3Amount;
+                    
+                    // Base for tax calculation: Lương CB + Thưởng NV + Tăng Ca
+                    const taxableAmount = baseSalaryAmount + taskSalaryAmount + totalOvertimeAmount;
+                    
+                    let tncnAmount = 0;
+                    let insuranceAmount = 0;
+                    
+                    if (emp.tncn > 0) {
+                        tncnAmount = taxableAmount * (emp.tncn / 100);
+                    }
+                    
+                    if (emp.insurance > 0) {
+                        insuranceAmount = emp.baseSalary * (emp.insurance / 100);
+                    }
+                    
+                    const netSalary = baseSalaryAmount + taskSalaryAmount + attendance.bonus + totalOvertimeAmount - tncnAmount - insuranceAmount - attendance.advance;
+                    
+                    // Only include employees with positive net salary
+                    if (netSalary > 0) {
+                        const currentMonth = new Date().toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' });
+                        
+                        worksheetData.push([
+                            stt,
+                            emp.name,
+                            branchNames[emp.branch],
+                            emp.accountNumber || '', // Số tài khoản - từ dữ liệu nhân viên hoặc để trống
+                            emp.bankName || '', // Ngân hàng - từ dữ liệu nhân viên hoặc để trống
+                            Math.round(netSalary),
+                            `Luong thang ${currentMonth} - ${emp.name} - ${emp.code}`
+                        ]);
+                        
+                        totalAmount += netSalary;
+                        stt++;
+                    }
+                }
+            });
+
+            // Add total row
+            worksheetData.push([
+                '', '', '', '', 'TỔNG CỘNG:', Math.round(totalAmount), ''
+            ]);
+
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            
+            // Set column widths
+            worksheet['!cols'] = [
+                { wch: 5 },  // STT
+                { wch: 25 }, // Tên Nhân Viên
+                { wch: 18 }, // Chi Nhánh
+                { wch: 18 }, // Số Tài Khoản
+                { wch: 15 }, // Ngân Hàng
+                { wch: 15 }, // Số Tiền
+                { wch: 40 }  // Nội Dung
+            ];
+            
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Bảng Kê Ngân Hàng');
+            
+            const fileName = `bang-ke-ngan-hang-tat-ca-${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            
+            showNotification('🏦 Đã xuất bảng kê ngân hàng thành công!', 'success');
+        }
+
+        // Export bank statement by branch
+        function exportBankStatementByBranch(branchCode) {
+            const branchEmployees = employees.filter(emp => emp.branch === branchCode);
+            
+            if (branchEmployees.length === 0) {
+                showNotification(`❌ Không có nhân viên nào ở ${branchNames[branchCode]}!`, 'error');
+                return;
+            }
+
+            const workbook = XLSX.utils.book_new();
+            const worksheetData = [];
+
+            // Header for bank statement
+            worksheetData.push([
+                'STT', 'Tên Nhân Viên', 'Chi Nhánh', 'Số Tài Khoản', 'Ngân Hàng', 'Số Tiền Chuyển', 'Nội Dung Chuyển Khoản'
+            ]);
+
+            let totalAmount = 0;
+            let stt = 1;
+
+            // Data for branch employees only
+            branchEmployees.forEach(emp => {
+                const attendance = attendanceRecords.find(att => att.employeeCode === emp.code);
+                
+                if (attendance) {
+                    const dailySalary = emp.baseSalary / 26;
+                    const hourlySalary = dailySalary / 8;
+                    
+                    const baseSalaryAmount = dailySalary * attendance.workDays;
+                    const taskSalaryAmount = (emp.taskSalary || 0) / 26 * attendance.workDays;
+                    const overtime15Amount = hourlySalary * 1.5 * attendance.overtime15;
+                    const overtime2Amount = hourlySalary * 2 * attendance.overtime2;
+                    const overtime3Amount = hourlySalary * 3 * attendance.overtime3;
+                    const totalOvertimeAmount = overtime15Amount + overtime2Amount + overtime3Amount;
+                    
+                    // Base for tax calculation: Lương CB + Thưởng NV + Tăng Ca
+                    const taxableAmount = baseSalaryAmount + taskSalaryAmount + totalOvertimeAmount;
+                    
+                    let tncnAmount = 0;
+                    let insuranceAmount = 0;
+                    
+                    if (emp.tncn > 0) {
+                        tncnAmount = taxableAmount * (emp.tncn / 100);
+                    }
+                    
+                    if (emp.insurance > 0) {
+                        insuranceAmount = emp.baseSalary * (emp.insurance / 100);
+                    }
+                    
+                    const netSalary = baseSalaryAmount + taskSalaryAmount + attendance.bonus + totalOvertimeAmount - tncnAmount - insuranceAmount - attendance.advance;
+                    
+                    // Only include employees with positive net salary
+                    if (netSalary > 0) {
+                        const currentMonth = new Date().toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' });
+                        
+                        worksheetData.push([
+                            stt,
+                            emp.name,
+                            branchNames[emp.branch],
+                            emp.accountNumber || '', // Số tài khoản - từ dữ liệu nhân viên hoặc để trống
+                            emp.bankName || '', // Ngân hàng - từ dữ liệu nhân viên hoặc để trống
+                            Math.round(netSalary),
+                            `Luong thang ${currentMonth} - ${emp.name} - ${emp.code}`
+                        ]);
+                        
+                        totalAmount += netSalary;
+                        stt++;
+                    }
+                }
+            });
+
+            // Add total row
+            worksheetData.push([
+                '', '', '', '', 'TỔNG CỘNG:', Math.round(totalAmount), ''
+            ]);
+
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+            
+            // Set column widths
+            worksheet['!cols'] = [
+                { wch: 5 },  // STT
+                { wch: 25 }, // Tên Nhân Viên
+                { wch: 18 }, // Chi Nhánh
+                { wch: 18 }, // Số Tài Khoản
+                { wch: 15 }, // Ngân Hàng
+                { wch: 15 }, // Số Tiền
+                { wch: 40 }  // Nội Dung
+            ];
+            
+            XLSX.utils.book_append_sheet(workbook, worksheet, `BK ${branchNames[branchCode]}`);
+            
+            const fileName = `bang-ke-ngan-hang-${branchCode}-${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+            
+            showNotification(`🏦 Đã xuất bảng kê ngân hàng ${branchNames[branchCode]} thành công!`, 'success');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'993322bee01b6009',t:'MTc2MTI0MjQ0NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+

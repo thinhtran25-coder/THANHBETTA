@@ -1,0 +1,1 @@
+Tạo Prompt kiểm tra TL76.html kiểm tra chỉnh sửa Chấm công. Chọn tháng MM/YYYY=>Chi Nhánh=> Xuất mẫu Excel Chấm_Công_:là danh sách tất cả Nhân viên CN đã chon csdddddúc Columm như hình. Nhập lại Mẫu Excel Chấm_Công_ vào công thức tính công, Chọn MM/YYYY=> Chi Nhánh=> xuất File mẫu Excel Cham_Cong_ CN chọn.Mẫu excel là ds nhân viên trong chi nhánh ví dụ CN VP Form như hình

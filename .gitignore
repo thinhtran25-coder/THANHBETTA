@@ -1,0 +1,8 @@
+﻿# General
+.DS_Store
+Thumbs.db
+*.log
+# Web
+node_modules/
+dist/
+build/
