@@ -1469,27 +1469,35 @@
 
                 const item = document.createElement('div');
                 item.className = 'bg-gray-50 p-4 rounded-lg border';
-                item.innerHTML = 
-                    <h4 class="font-medium text-gray-900 mb-2"></h4>
+
+                const branchLabel = branchNames[branchCode] || branchCode.toUpperCase();
+                const employeeCount = branchEmployees.length;
+                const formattedSalary = formatCurrency(Math.round(branchSalary));
+                const formattedOvertime = `${branchOvertime.toFixed(1)} giờ`;
+
+                item.innerHTML = `
+                    <h4 class="font-medium text-gray-900 mb-2">${branchLabel}</h4>
                     <div class="grid grid-cols-3 gap-4 text-sm">
                         <div>
                             <span class="text-gray-600">Nhân viên:</span>
-                            <span class="font-medium"></span>
+                            <span class="font-medium">${employeeCount} NV</span>
                         </div>
                         <div>
                             <span class="text-gray-600">Tổng lương:</span>
-                            <span class="font-medium text-green-600"></span>
+                            <span class="font-medium text-green-600">${formattedSalary}</span>
                         </div>
                         <div>
                             <span class="text-gray-600">Tăng ca:</span>
-                            <span class="font-medium"> giờ</span>
+                            <span class="font-medium">${formattedOvertime}</span>
                         </div>
                     </div>
-                ;
+                `;
 
                 summary.appendChild(item);
             });
-        }        // Export salary report
+        }
+
+        // Export salary report
         function exportSalaryReport() {
             if (employees.length === 0) {
                 showNotification('❌ Không có dữ liệu để xuất!', 'error');
